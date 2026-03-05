@@ -26,7 +26,7 @@
         body{
             min-height:100vh;
             font-family:'Plus Jakarta Sans',system-ui,sans-serif;
-            display:flex;flex-direction:column;align-items:center;justify-content:center;
+            display:flex;flex-direction:column;align-items:center;
             background:#0b0b1a;
             color:#e2e8f0;
             padding:24px;
@@ -34,66 +34,164 @@
             position:relative;
         }
 
-        /* animated gradient blobs */
-        .blob{position:fixed;border-radius:50%;filter:blur(100px);opacity:.4;z-index:0;will-change:transform}
+        .blob{position:fixed;border-radius:50%;filter:blur(100px);opacity:.4;z-index:0;will-change:transform;pointer-events:none}
         .blob-1{width:480px;height:480px;background:#7c3aed;top:-15%;left:-10%;animation:drift 10s ease-in-out infinite alternate}
         .blob-2{width:360px;height:360px;background:#06b6d4;bottom:-10%;right:-8%;animation:drift 12s ease-in-out infinite alternate-reverse}
         .blob-3{width:260px;height:260px;background:#f43f5e;top:40%;left:55%;animation:drift 14s ease-in-out infinite alternate}
         @keyframes drift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(30px,20px) scale(1.08)}}
+        @keyframes pop{from{opacity:0;transform:translateY(32px) scale(.95)}to{opacity:1;transform:none}}
+        @keyframes fadein{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 
-        /* card */
-        .card{
+        /* ── Public Hero ── */
+        .hero{
             position:relative;z-index:1;
-            width:100%;max-width:520px;
-            background:rgba(255,255,255,.06);
-            backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-            border:1px solid rgba(255,255,255,.1);
-            border-radius:28px;
-            padding:48px 32px 40px;
+            width:100%;max-width:640px;
             text-align:center;
+            padding:48px 0 0;
             animation:pop .7s cubic-bezier(.22,1,.36,1) both;
         }
-        @keyframes pop{from{opacity:0;transform:translateY(32px) scale(.95)}to{opacity:1;transform:none}}
-
-        .icon{
-            width:80px;height:80px;margin:0 auto 22px;
+        .hero-icon{
+            width:88px;height:88px;margin:0 auto 20px;
             background:linear-gradient(135deg,#7c3aed,#06b6d4);
-            border-radius:22px;display:grid;place-items:center;
-            font-size:36px;
+            border-radius:24px;display:grid;place-items:center;
+            font-size:40px;
             box-shadow:0 8px 32px rgba(124,58,237,.45);
         }
-
-        .tag{
+        .hero-tag{
             display:inline-block;
             background:rgba(124,58,237,.2);color:#c4b5fd;
             font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;
-            padding:5px 16px;border-radius:50px;margin-bottom:16px;
+            padding:5px 16px;border-radius:50px;margin-bottom:14px;
         }
-
-        h1{
-            font-size:2.1rem;font-weight:800;line-height:1.15;margin-bottom:12px;
+        .hero h1{
+            font-size:2.4rem;font-weight:800;line-height:1.15;margin-bottom:10px;
             background:linear-gradient(90deg,#fff 30%,#7dd3fc);
             -webkit-background-clip:text;-webkit-text-fill-color:transparent;
             background-clip:text;
         }
-
-        .desc{
+        .hero-tagline{
+            font-size:1.15rem;font-weight:700;color:rgba(255,255,255,.7);margin-bottom:8px;
+        }
+        .hero-tagline em{
+            font-style:normal;
+            background:linear-gradient(90deg,#c4b5fd,#7dd3fc);
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+            background-clip:text;
+        }
+        .hero-desc{
             font-size:.95rem;line-height:1.7;
-            color:rgba(255,255,255,.55);margin-bottom:8px;
+            color:rgba(255,255,255,.5);margin-bottom:6px;max-width:480px;margin-left:auto;margin-right:auto;
         }
 
-        /* pillar pills */
-        .pills{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:20px 0 24px}
+        .pills{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:20px 0 28px}
         .pill{
             display:flex;align-items:center;gap:5px;
             background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);
             border-radius:50px;padding:7px 16px;
             font-size:.82rem;font-weight:600;color:#cbd5e1;
-            transition:background .2s;
         }
-        .pill:hover{background:rgba(255,255,255,.14)}
 
-        /* session grid */
+        /* ── Feature cards ── */
+        .features{
+            display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+            width:100%;max-width:520px;margin:0 auto 32px;
+        }
+        .feat{
+            background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+            border-radius:16px;padding:20px 14px;text-align:center;
+        }
+        .feat-emoji{font-size:1.8rem;margin-bottom:8px}
+        .feat-title{font-size:.82rem;font-weight:700;color:#e2e8f0;margin-bottom:4px}
+        .feat-desc{font-size:.7rem;color:rgba(255,255,255,.4);line-height:1.5}
+        @media(max-width:480px){.features{grid-template-columns:1fr}.feat{padding:14px}}
+
+        .divider{
+            width:60px;height:3px;border-radius:99px;margin:0 auto 28px;
+            background:linear-gradient(90deg,#7c3aed,#06b6d4);opacity:.5;
+        }
+
+        /* ── Sign-in ── */
+        .auth-section{
+            position:relative;z-index:1;
+            width:100%;max-width:520px;
+            text-align:center;
+            animation:fadein .5s .3s both;
+        }
+        .auth-card{
+            background:rgba(255,255,255,.06);
+            backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+            border:1px solid rgba(255,255,255,.1);
+            border-radius:22px;
+            padding:32px 28px;
+        }
+        .auth-card h2{font-size:1.15rem;font-weight:700;color:#c4b5fd;margin-bottom:8px}
+        .auth-card p{font-size:.88rem;color:rgba(255,255,255,.45);margin-bottom:20px;line-height:1.6}
+
+        .g-btn{
+            display:inline-flex;align-items:center;gap:12px;
+            background:#fff;color:#3c4043;
+            border:none;border-radius:14px;
+            padding:12px 28px;
+            font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+            font-size:.92rem;font-weight:600;
+            cursor:pointer;
+            box-shadow:0 2px 12px rgba(0,0,0,.15);
+            transition:transform .18s,box-shadow .18s;
+        }
+        .g-btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.2)}
+        .g-btn:active{transform:translateY(0)}
+        .g-btn svg{width:20px;height:20px;flex-shrink:0}
+
+        .g-btn-alt{
+            display:inline-flex;align-items:center;gap:8px;
+            background:none;border:1px solid rgba(255,255,255,.15);border-radius:10px;
+            color:rgba(255,255,255,.5);font-family:inherit;font-size:.78rem;font-weight:600;
+            padding:8px 16px;cursor:pointer;margin-top:12px;transition:all .2s;
+        }
+        .g-btn-alt:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7)}
+
+        /* ── Dashboard ── */
+        .dashboard{
+            position:relative;z-index:1;
+            width:100%;max-width:520px;
+            animation:fadein .5s both;
+        }
+        .dashboard.hidden{display:none}
+
+        .user-bar{
+            display:flex;align-items:center;gap:12px;
+            background:rgba(255,255,255,.06);
+            backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+            border:1px solid rgba(255,255,255,.1);
+            border-radius:16px;
+            padding:14px 18px;margin-bottom:18px;
+        }
+        .user-avatar{
+            width:40px;height:40px;border-radius:12px;object-fit:cover;
+            border:2px solid rgba(124,58,237,.4);
+        }
+        .user-info{flex:1;text-align:left}
+        .user-name{font-size:.9rem;font-weight:700;color:#e2e8f0}
+        .user-email{font-size:.72rem;color:rgba(255,255,255,.4)}
+        .sign-out-btn{
+            background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);
+            border-radius:10px;color:rgba(255,255,255,.5);
+            font-family:inherit;font-size:.72rem;font-weight:600;
+            padding:7px 14px;cursor:pointer;transition:all .2s;
+        }
+        .sign-out-btn:hover{background:rgba(244,63,94,.15);color:#fb7185;border-color:rgba(244,63,94,.3)}
+
+        .dash-card{
+            background:rgba(255,255,255,.06);
+            backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+            border:1px solid rgba(255,255,255,.1);
+            border-radius:22px;
+            padding:32px 28px;
+            text-align:center;
+        }
+        .dash-card h2{font-size:1.2rem;font-weight:700;color:#c4b5fd;margin-bottom:6px}
+        .dash-subtitle{font-size:.85rem;color:rgba(255,255,255,.45);margin-bottom:22px}
+
         .sessions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 24px;width:100%}
         .session-link{
             display:flex;align-items:center;gap:10px;
@@ -113,7 +211,6 @@
         .session-link .s-title{font-size:.78rem;font-weight:700;color:#e2e8f0;line-height:1.3}
         .session-link .s-desc{font-size:.65rem;color:rgba(255,255,255,.4);line-height:1.4;margin-top:2px}
 
-        /* CTA */
         .cta{
             display:inline-flex;align-items:center;gap:10px;
             text-decoration:none;
@@ -129,13 +226,18 @@
         .cta svg{width:18px;height:18px;fill:currentColor;transition:transform .18s}
         .cta:hover svg{transform:translateX(4px)}
 
-        .footer{margin-top:22px;font-size:.7rem;color:rgba(255,255,255,.25)}
+        .footer{
+            position:relative;z-index:1;
+            margin-top:28px;font-size:.7rem;color:rgba(255,255,255,.25);text-align:center;
+        }
 
         @media(max-width:480px){
-            .card{padding:36px 20px 30px;border-radius:22px}
-            h1{font-size:1.7rem}
+            .hero h1{font-size:1.8rem}
+            .hero-tagline{font-size:1rem}
+            .auth-card,.dash-card{padding:24px 20px;border-radius:18px}
             .sessions{grid-template-columns:1fr}
             .cta{padding:13px 26px;font-size:.88rem}
+            .user-bar{padding:12px 14px}
         }
     </style>
 </head>
@@ -144,11 +246,13 @@
     <div class="blob blob-2"></div>
     <div class="blob blob-3"></div>
 
-    <main class="card">
-        <div class="icon">🎓</div>
-        <span class="tag">Leadership &amp; Softskill</span>
+    <!-- ═══════════ PUBLIC HERO ═══════════ -->
+    <section class="hero" id="heroSection">
+        <div class="hero-icon">🎓</div>
+        <span class="hero-tag">Leadership &amp; Softskill</span>
         <h1>Moklet Leadership</h1>
-        <p class="desc">Kurikulum <strong style="color:#c4b5fd">Leadership</strong> &amp; <strong style="color:#7dd3fc">Softskill</strong> untuk siswa RPL, TKJ &amp; PG Moklet — 6 sesi, ringkas, praktis.</p>
+        <p class="hero-tagline">Get Ready to Become <em>A Global Digitalent!</em></p>
+        <p class="hero-desc">Kurikulum <strong style="color:#c4b5fd">Leadership</strong> &amp; <strong style="color:#7dd3fc">Softskill</strong> untuk siswa RPL, TKJ &amp; PG SMK Telkom Malang — 6 sesi, ringkas, praktis.</p>
 
         <div class="pills">
             <span class="pill">💡 Sadari</span>
@@ -156,57 +260,227 @@
             <span class="pill">🔥 Berani</span>
         </div>
 
-        <div class="sessions">
-            <a class="session-link" href="presentasi.html">
-                <div class="s-num">S1</div>
-                <div class="s-info">
-                    <div class="s-title">Fondasi MOLESH</div>
-                    <div class="s-desc">Sadari, Peduli, Berani &amp; neuroscience</div>
-                </div>
-            </a>
-            <a class="session-link" href="sesi2.html">
-                <div class="s-num">S2</div>
-                <div class="s-info">
-                    <div class="s-title">Deep Dive Sadari</div>
-                    <div class="s-desc">Growth mindset &amp; personal branding</div>
-                </div>
-            </a>
-            <a class="session-link" href="sesi3.html">
-                <div class="s-num">S3</div>
-                <div class="s-info">
-                    <div class="s-title">Deep Dive Peduli</div>
-                    <div class="s-desc">Kolaborasi tim &amp; peer review</div>
-                </div>
-            </a>
-            <a class="session-link" href="sesi4.html">
-                <div class="s-num">S4</div>
-                <div class="s-info">
-                    <div class="s-title">Deep Dive Berani</div>
-                    <div class="s-desc">Etika digital &amp; pengambilan keputusan</div>
-                </div>
-            </a>
-            <a class="session-link" href="sesi5.html">
-                <div class="s-num">S5</div>
-                <div class="s-info">
-                    <div class="s-title">Kepemimpinan Organisasi</div>
-                    <div class="s-desc">Situational leadership &amp; conflict resolution</div>
-                </div>
-            </a>
-            <a class="session-link" href="sesi6.html">
-                <div class="s-num">S6</div>
-                <div class="s-info">
-                    <div class="s-title">Rencana Aksi</div>
-                    <div class="s-desc">Personal leadership roadmap 3 bulan</div>
-                </div>
-            </a>
+        <div class="features">
+            <div class="feat">
+                <div class="feat-emoji">🧠</div>
+                <div class="feat-title">Neuroscience</div>
+                <div class="feat-desc">Materi berbasis cara kerja otak</div>
+            </div>
+            <div class="feat">
+                <div class="feat-emoji">🎮</div>
+                <div class="feat-title">Interaktif</div>
+                <div class="feat-desc">Quiz, roleplay &amp; aktivitas langsung</div>
+            </div>
+            <div class="feat">
+                <div class="feat-emoji">🚀</div>
+                <div class="feat-title">Actionable</div>
+                <div class="feat-desc">Tantangan nyata tiap sesi</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════ SIGN-IN SECTION ═══════════ -->
+    <section class="auth-section" id="authSection">
+        <div class="divider"></div>
+        <div class="auth-card">
+            <h2>🔐 Masuk untuk Mulai Belajar</h2>
+            <p>Sign in dengan akun Google untuk mengakses 6 sesi pembelajaran MOLESH.</p>
+            <button class="g-btn" id="googleSignInBtn" onclick="handleGoogleSignIn()">
+                <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 019.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.97 23.97 0 000 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                Sign in with Google
+            </button>
+            <br>
+            <button class="g-btn-alt" onclick="handleGuestAccess()">
+                👀 Lihat Pratinjau Tanpa Login
+            </button>
+        </div>
+    </section>
+
+    <!-- ═══════════ DASHBOARD (after login) ═══════════ -->
+    <section class="dashboard hidden" id="dashboard">
+        <div class="user-bar" id="userBar">
+            <img class="user-avatar" id="userAvatar" src="" alt="avatar">
+            <div class="user-info">
+                <div class="user-name" id="userName"></div>
+                <div class="user-email" id="userEmail"></div>
+            </div>
+            <button class="sign-out-btn" onclick="handleSignOut()">Sign Out</button>
         </div>
 
-        <a class="cta" href="presentasi.html">
-            MULAI SESI 1
-            <svg viewBox="0 0 20 20"><path d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"/></svg>
-        </a>
+        <div class="dash-card">
+            <h2>📚 Menu Pembelajaran</h2>
+            <p class="dash-subtitle">Pilih sesi untuk memulai. Selesaikan secara berurutan untuk hasil terbaik.</p>
 
-        <p class="footer">© 2026 Moklet Leadership &bull; SMK Telkom Malang</p>
-    </main>
+            <div class="sessions">
+                <a class="session-link" href="presentasi.html">
+                    <div class="s-num">S1</div>
+                    <div class="s-info">
+                        <div class="s-title">Fondasi MOLESH</div>
+                        <div class="s-desc">Sadari, Peduli, Berani &amp; neuroscience</div>
+                    </div>
+                </a>
+                <a class="session-link" href="sesi2.html">
+                    <div class="s-num">S2</div>
+                    <div class="s-info">
+                        <div class="s-title">Deep Dive Sadari</div>
+                        <div class="s-desc">Growth mindset &amp; personal branding</div>
+                    </div>
+                </a>
+                <a class="session-link" href="sesi3.html">
+                    <div class="s-num">S3</div>
+                    <div class="s-info">
+                        <div class="s-title">Deep Dive Peduli</div>
+                        <div class="s-desc">Kolaborasi tim &amp; peer review</div>
+                    </div>
+                </a>
+                <a class="session-link" href="sesi4.html">
+                    <div class="s-num">S4</div>
+                    <div class="s-info">
+                        <div class="s-title">Deep Dive Berani</div>
+                        <div class="s-desc">Etika digital &amp; pengambilan keputusan</div>
+                    </div>
+                </a>
+                <a class="session-link" href="sesi5.html">
+                    <div class="s-num">S5</div>
+                    <div class="s-info">
+                        <div class="s-title">Kepemimpinan Organisasi</div>
+                        <div class="s-desc">Situational leadership &amp; conflict resolution</div>
+                    </div>
+                </a>
+                <a class="session-link" href="sesi6.html">
+                    <div class="s-num">S6</div>
+                    <div class="s-info">
+                        <div class="s-title">Rencana Aksi</div>
+                        <div class="s-desc">Personal leadership roadmap 3 bulan</div>
+                    </div>
+                </a>
+            </div>
+
+            <a class="cta" href="presentasi.html">
+                MULAI SESI 1
+                <svg viewBox="0 0 20 20"><path d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"/></svg>
+            </a>
+        </div>
+    </section>
+
+    <p class="footer">© 2026 Moklet Leadership &bull; SMK Telkom Malang</p>
+
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        /*
+         * ─── CONFIG ───────────────────────────────────
+         * Ganti CLIENT_ID di bawah dengan Google OAuth Client ID kamu.
+         * Buat di: https://console.cloud.google.com/apis/credentials
+         * Tipe: OAuth 2.0 Client ID → Web application
+         * Authorized JavaScript origins: https://hadhiee.github.io
+         * ──────────────────────────────────────────────
+         */
+        var GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+
+        var heroSection = document.getElementById('heroSection');
+        var authSection = document.getElementById('authSection');
+        var dashboard   = document.getElementById('dashboard');
+        var userAvatar  = document.getElementById('userAvatar');
+        var userName    = document.getElementById('userName');
+        var userEmail   = document.getElementById('userEmail');
+
+        /* ── Check saved session ── */
+        function checkSession() {
+            var saved = localStorage.getItem('molesh_user');
+            if (saved) {
+                try {
+                    var user = JSON.parse(saved);
+                    showDashboard(user);
+                } catch (e) {
+                    localStorage.removeItem('molesh_user');
+                }
+            }
+        }
+
+        /* ── Show dashboard ── */
+        function showDashboard(user) {
+            authSection.style.display = 'none';
+            dashboard.classList.remove('hidden');
+            var fallbackSvg = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#7c3aed"/><text x="50" y="62" text-anchor="middle" fill="white" font-size="40" font-family="sans-serif">' + (user.name ? user.name[0].toUpperCase() : '?') + '</text></svg>');
+            userAvatar.src = user.picture || fallbackSvg;
+            userAvatar.onerror = function(){ this.src = fallbackSvg; };
+            userName.textContent  = user.name  || 'Pengguna';
+            userEmail.textContent = user.email || '';
+        }
+
+        /* ── Google Sign-In ── */
+        function handleGoogleSignIn() {
+            if (GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com') {
+                alert('⚠️ Google Client ID belum dikonfigurasi.\n\n' +
+                    'Untuk mengaktifkan Google Sign-In:\n' +
+                    '1. Buka https://console.cloud.google.com/apis/credentials\n' +
+                    '2. Buat OAuth 2.0 Client ID (Web application)\n' +
+                    '3. Tambahkan origin: https://hadhiee.github.io\n' +
+                    '4. Copy Client ID, paste di index.html baris GOOGLE_CLIENT_ID\n\n' +
+                    'Untuk sementara, gunakan tombol "Lihat Pratinjau Tanpa Login".');
+                return;
+            }
+
+            if (typeof google === 'undefined' || !google.accounts) {
+                alert('Google Sign-In library belum dimuat. Periksa koneksi internet kamu.');
+                return;
+            }
+
+            google.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                callback: handleCredentialResponse,
+                auto_select: false,
+            });
+            google.accounts.id.prompt(function(notification) {
+                if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                    /* Fallback: use token client if One Tap not available */
+                    var tokenClient = google.accounts.oauth2.initTokenClient({
+                        client_id: GOOGLE_CLIENT_ID,
+                        scope: 'profile email',
+                        callback: function(response) {
+                            if (response.access_token) {
+                                fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                                    headers: { 'Authorization': 'Bearer ' + response.access_token }
+                                })
+                                .then(function(r) { return r.json(); })
+                                .then(function(profile) {
+                                    var user = { name: profile.name, email: profile.email, picture: profile.picture };
+                                    localStorage.setItem('molesh_user', JSON.stringify(user));
+                                    showDashboard(user);
+                                });
+                            }
+                        }
+                    });
+                    tokenClient.requestAccessToken();
+                }
+            });
+        }
+
+        function handleCredentialResponse(response) {
+            var payload = JSON.parse(atob(response.credential.split('.')[1]));
+            var user = { name: payload.name, email: payload.email, picture: payload.picture };
+            localStorage.setItem('molesh_user', JSON.stringify(user));
+            showDashboard(user);
+        }
+
+        /* ── Guest access ── */
+        function handleGuestAccess() {
+            var user = { name: 'Tamu', email: 'Mode pratinjau', picture: '' };
+            localStorage.setItem('molesh_user', JSON.stringify(user));
+            showDashboard(user);
+        }
+
+        /* ── Sign out ── */
+        function handleSignOut() {
+            localStorage.removeItem('molesh_user');
+            authSection.style.display = '';
+            dashboard.classList.add('hidden');
+            try { google.accounts.id.disableAutoSelect(); } catch(e) {}
+        }
+
+        /* ── Init ── */
+        checkSession();
+    </script>
 </body>
 </html>
