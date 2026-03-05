@@ -447,6 +447,8 @@
             if (!user.email || user.email === 'Mode pratinjau') return;
             fetch(MOLESH_CONFIG.APPS_SCRIPT_URL, {
                 method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({ action: 'login', email: user.email, googleName: user.name, picture: user.picture })
             }).catch(function(){});
         }

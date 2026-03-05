@@ -31,7 +31,8 @@ function doPost(e) {
   lock.waitLock(10000);
 
   try {
-    var data = JSON.parse(e.postData.contents);
+    var raw = e.postData.contents;
+    var data = JSON.parse(raw);
     var sheet = getOrCreateSheet();
 
     if (data.action === 'login') {
