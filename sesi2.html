@@ -620,22 +620,30 @@
                 })
                 .catch(function() { btn.disabled = false; btn.textContent = '\uD83D\uDE80 Kirim Refleksi'; alert('Gagal mengirim. Coba lagi.'); });
         }
+        /* Load existing reflection from backend (prioritize server data) */
         (function() {
             var raw = localStorage.getItem('molesh_user');
             if (!raw) return;
             try { var user = JSON.parse(raw); } catch(e){ return; }
             if (!user.email || user.email === 'Mode pratinjau') return;
+            
+            /* Clean old localStorage keys without email suffix */
+            try { localStorage.removeItem('molesh_ref_' + SESI_NUM); } catch(e){}
+            
             var localKey = 'molesh_ref_' + SESI_NUM + '_' + user.email;
-            var saved = localStorage.getItem(localKey);
-            if (saved) {
-                document.getElementById('refleksiText').value = saved;
-                document.getElementById('refleksiText').disabled = true;
-                document.getElementById('refSubmitBtn').style.display = 'none';
-                document.getElementById('refSuccess').style.display = 'block';
+            try { var apiUrl = MOLESH_CONFIG.APPS_SCRIPT_URL; } catch(e){ return; }
+            if (!apiUrl || apiUrl === 'YOUR_APPS_SCRIPT_URL') {
+                /* Fallback to localStorage if backend not configured */
+                var saved = localStorage.getItem(localKey);
+                if (saved) {
+                    document.getElementById('refleksiText').value = saved;
+                    document.getElementById('refleksiText').disabled = true;
+                    document.getElementById('refSubmitBtn').style.display = 'none';
+                    document.getElementById('refSuccess').style.display = 'block';
+                }
                 return;
             }
-            try { var apiUrl = MOLESH_CONFIG.APPS_SCRIPT_URL; } catch(e){ return; }
-            if (!apiUrl || apiUrl === 'YOUR_APPS_SCRIPT_URL') return;
+            /* Fetch from backend first (source of truth) */
             fetch(apiUrl + '?type=reflections')
                 .then(function(r){ return r.json(); })
                 .then(function(data){
@@ -646,9 +654,27 @@
                         document.getElementById('refSubmitBtn').style.display = 'none';
                         document.getElementById('refSuccess').style.display = 'block';
                         localStorage.setItem(localKey, myRef.refleksi);
+                    } else {
+                        /* No backend data, check localStorage */
+                        var saved = localStorage.getItem(localKey);
+                        if (saved) {
+                            document.getElementById('refleksiText').value = saved;
+                            document.getElementById('refleksiText').disabled = true;
+                            document.getElementById('refSubmitBtn').style.display = 'none';
+                            document.getElementById('refSuccess').style.display = 'block';
+                        }
                     }
                 })
-                .catch(function(){});
+                .catch(function(){
+                    /* Network error, fallback to localStorage */
+                    var saved = localStorage.getItem(localKey);
+                    if (saved) {
+                        document.getElementById('refleksiText').value = saved;
+                        document.getElementById('refleksiText').disabled = true;
+                        document.getElementById('refSubmitBtn').style.display = 'none';
+                        document.getElementById('refSuccess').style.display = 'block';
+                    }
+                });
         })();
 
     </script>

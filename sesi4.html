@@ -568,17 +568,19 @@
             if (!raw) return;
             try { var user = JSON.parse(raw); } catch(e){ return; }
             if (!user.email || user.email === 'Mode pratinjau') return;
+            try { localStorage.removeItem('molesh_ref_' + SESI_NUM); } catch(e){}
             var localKey = 'molesh_ref_' + SESI_NUM + '_' + user.email;
-            var saved = localStorage.getItem(localKey);
-            if (saved) {
-                document.getElementById('refleksiText').value = saved;
-                document.getElementById('refleksiText').disabled = true;
-                document.getElementById('refSubmitBtn').style.display = 'none';
-                document.getElementById('refSuccess').style.display = 'block';
+            try { var apiUrl = MOLESH_CONFIG.APPS_SCRIPT_URL; } catch(e){ return; }
+            if (!apiUrl || apiUrl === 'YOUR_APPS_SCRIPT_URL') {
+                var saved = localStorage.getItem(localKey);
+                if (saved) {
+                    document.getElementById('refleksiText').value = saved;
+                    document.getElementById('refleksiText').disabled = true;
+                    document.getElementById('refSubmitBtn').style.display = 'none';
+                    document.getElementById('refSuccess').style.display = 'block';
+                }
                 return;
             }
-            try { var apiUrl = MOLESH_CONFIG.APPS_SCRIPT_URL; } catch(e){ return; }
-            if (!apiUrl || apiUrl === 'YOUR_APPS_SCRIPT_URL') return;
             fetch(apiUrl + '?type=reflections')
                 .then(function(r){ return r.json(); })
                 .then(function(data){
@@ -589,9 +591,25 @@
                         document.getElementById('refSubmitBtn').style.display = 'none';
                         document.getElementById('refSuccess').style.display = 'block';
                         localStorage.setItem(localKey, myRef.refleksi);
+                    } else {
+                        var saved = localStorage.getItem(localKey);
+                        if (saved) {
+                            document.getElementById('refleksiText').value = saved;
+                            document.getElementById('refleksiText').disabled = true;
+                            document.getElementById('refSubmitBtn').style.display = 'none';
+                            document.getElementById('refSuccess').style.display = 'block';
+                        }
                     }
                 })
-                .catch(function(){});
+                .catch(function(){
+                    var saved = localStorage.getItem(localKey);
+                    if (saved) {
+                        document.getElementById('refleksiText').value = saved;
+                        document.getElementById('refleksiText').disabled = true;
+                        document.getElementById('refSubmitBtn').style.display = 'none';
+                        document.getElementById('refSuccess').style.display = 'block';
+                    }
+                });
         })();
 
     </script>
