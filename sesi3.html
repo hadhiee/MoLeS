@@ -528,8 +528,32 @@
                 })
                 .catch(function(){ _ciLoading = false; });
         }
-        function getCheckedInIds() { try { return JSON.parse(localStorage.getItem('molesh_checkins') || '[]'); } catch(e){ return []; } }
-        function markCheckedIn(ciId) { var ids = getCheckedInIds(); if (ids.indexOf(ciId) === -1) { ids.push(ciId); } localStorage.setItem('molesh_checkins', JSON.stringify(ids)); }
+        function getCheckedInIds() {
+            var raw = localStorage.getItem('molesh_user');
+            if (!raw) return [];
+            try {
+                var user = JSON.parse(raw);
+                var email = user.email;
+                if (!email || email === 'Mode pratinjau') return [];
+                var allData = JSON.parse(localStorage.getItem('molesh_checkins') || '{}');
+                return allData[email] || [];
+            } catch(e){ return []; }
+        }
+        function markCheckedIn(ciId) {
+            var raw = localStorage.getItem('molesh_user');
+            if (!raw) return;
+            try {
+                var user = JSON.parse(raw);
+                var email = user.email;
+                if (!email || email === 'Mode pratinjau') return;
+                var allData = JSON.parse(localStorage.getItem('molesh_checkins') || '{}');
+                if (!allData[email]) allData[email] = [];
+                if (allData[email].indexOf(ciId) === -1) {
+                    allData[email].push(ciId);
+                }
+                localStorage.setItem('molesh_checkins', JSON.stringify(allData));
+            } catch(e){}
+        }
         function doCheckin(ciId, tanggal, deskripsi) {
             var raw = localStorage.getItem('molesh_user'); var profile = localStorage.getItem('molesh_profile');
             if (!raw) { alert('Silakan login terlebih dahulu.'); return; }
