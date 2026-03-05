@@ -558,18 +558,39 @@
                     btn.style.display = 'none';
                     document.getElementById('refleksiText').disabled = true;
                     document.getElementById('refSuccess').style.display = 'block';
-                    localStorage.setItem('molesh_ref_' + SESI_NUM, text);
+                    localStorage.setItem('molesh_ref_' + SESI_NUM + '_' + user.email, text);
                 })
                 .catch(function() { btn.disabled = false; btn.textContent = '\uD83D\uDE80 Kirim Refleksi'; alert('Gagal mengirim. Coba lagi.'); });
         }
         (function() {
-            var saved = localStorage.getItem('molesh_ref_' + SESI_NUM);
+            var raw = localStorage.getItem('molesh_user');
+            if (!raw) return;
+            try { var user = JSON.parse(raw); } catch(e){ return; }
+            if (!user.email || user.email === 'Mode pratinjau') return;
+            var localKey = 'molesh_ref_' + SESI_NUM + '_' + user.email;
+            var saved = localStorage.getItem(localKey);
             if (saved) {
                 document.getElementById('refleksiText').value = saved;
                 document.getElementById('refleksiText').disabled = true;
                 document.getElementById('refSubmitBtn').style.display = 'none';
                 document.getElementById('refSuccess').style.display = 'block';
+                return;
             }
+            try { var apiUrl = MOLESH_CONFIG.APPS_SCRIPT_URL; } catch(e){ return; }
+            if (!apiUrl || apiUrl === 'YOUR_APPS_SCRIPT_URL') return;
+            fetch(apiUrl + '?type=reflections')
+                .then(function(r){ return r.json(); })
+                .then(function(data){
+                    var myRef = data.find(function(r){ return String(r.sesi) == String(SESI_NUM) && r.email === user.email; });
+                    if (myRef && myRef.refleksi) {
+                        document.getElementById('refleksiText').value = myRef.refleksi;
+                        document.getElementById('refleksiText').disabled = true;
+                        document.getElementById('refSubmitBtn').style.display = 'none';
+                        document.getElementById('refSuccess').style.display = 'block';
+                        localStorage.setItem(localKey, myRef.refleksi);
+                    }
+                })
+                .catch(function(){});
         })();
 
     </script>
