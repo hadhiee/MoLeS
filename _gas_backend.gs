@@ -87,7 +87,12 @@ function getSheetAsJSON(sheet) {
   for (var i = 1; i < data.length; i++) {
     var obj = {};
     for (var j = 0; j < headers.length; j++) {
-      obj[headers[j]] = data[i][j];
+      var val = data[i][j];
+      /* Convert Date objects to YYYY-MM-DD string to prevent timezone issues */
+      if (val instanceof Date && headers[j] === 'tanggal') {
+        val = Utilities.formatDate(val, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+      }
+      obj[headers[j]] = val;
     }
     result.push(obj);
   }

@@ -567,11 +567,7 @@
             var el = document.getElementById('ciTanggalPreview');
             if(!el) return;
             if(!val){ el.textContent=''; return; }
-            try{
-                var parts = val.split('-');
-                var d = new Date(parts[0], parts[1]-1, parts[2]);
-                el.textContent = '📅 ' + d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-            }catch(e){ el.textContent = val; }
+            el.textContent = '📅 ' + formatTanggalLong(val);
         }
 
         function saveCheckinSetting() {
@@ -590,13 +586,9 @@
 
             if (!tanggal) { alert('Tanggal wajib diisi!'); return; }
 
-            /* Show confirmation with the date */
-            var previewDate = tanggal;
-            try {
-                var pp = tanggal.split('-');
-                var dd = new Date(pp[0], pp[1]-1, pp[2]);
-                previewDate = dd.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-            } catch(e){}
+            /* IMPORTANT: Keep tanggal as string YYYY-MM-DD, do NOT convert to Date object */
+            /* Show confirmation with formatted date */
+            var previewDate = formatTanggalLong(tanggal);
             if (!confirm('Simpan jadwal check-in?\n\nTanggal: ' + previewDate + '\nDeskripsi: ' + (deskripsi||'-') + '\nStatus: ' + status)) return;
 
             _saving = true;
@@ -605,6 +597,8 @@
             saveBtn.textContent = '⏳ Menyimpan...';
             saveBtn.disabled = true;
 
+            /* Send tanggal as pure string YYYY-MM-DD (no Date conversion!) */
+            console.log('Sending to backend - tanggal:', tanggal, 'type:', typeof tanggal);
             var payload = JSON.stringify({ action: 'saveCheckinSetting', tanggal: tanggal, deskripsi: deskripsi, status: status });
             fetch(API_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain'}, body: payload })
                 .then(function(){
@@ -669,9 +663,17 @@
 
             var html = '<div class="ci-cards">';
             ciSettings.forEach(function(s){
+                /* Keep tanggal as string, normalize if needed */
                 var tanggal = s.tanggal;
-                if (tanggal instanceof Date || (typeof tanggal === 'string' && tanggal.indexOf('T') > -1)) {
-                    try { tanggal = new Date(tanggal).toISOString().slice(0,10); } catch(e){}
+                if (tanggal instanceof Date) {
+                    /* If backend returned Date object, format to YYYY-MM-DD */
+                    var y = tanggal.getFullYear();
+                    var m = String(tanggal.getMonth()+1).padStart(2,'0');
+                    var d = String(tanggal.getDate()).padStart(2,'0');
+                    tanggal = y + '-' + m + '-' + d;
+                } else if (typeof tanggal === 'string' && tanggal.indexOf('T') > -1) {
+                    /* If ISO string, extract date part only */
+                    tanggal = tanggal.slice(0,10);
                 }
                 var statusClass = s.status === 'aktif' ? 'ci-status-aktif' : 'ci-status-nonaktif';
                 var count = logCount[s.id] || 0;
@@ -815,10 +817,30 @@
         }
 
         function formatTanggal(str) {
+            /* Format YYYY-MM-DD to DD-MM-YYYY (string manipulation only, no Date object) */
+            if (!str) return '—';
             try {
                 var parts = str.split('-');
-                var d = new Date(parts[0], parts[1]-1, parts[2]);
-                return d.toLocaleDateString('id-ID', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+                if (parts.length === 3) {
+                    return parts[2] + '-' + parts[1] + '-' + parts[0]; /* DD-MM-YYYY */
+                }
+                return str;
+            } catch(e){ return str; }
+        }
+
+        function formatTanggalLong(str) {
+            /* Format YYYY-MM-DD to long Indonesian date for confirmation */
+            if (!str) return '—';
+            try {
+                var parts = str.split('-');
+                if (parts.length === 3) {
+                    var bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+                    var hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+                    /* Use UTC to avoid timezone offset */
+                    var d = new Date(parts[0] + '-' + parts[1] + '-' + parts[2] + 'T00:00:00Z');
+                    return hari[d.getUTCDay()] + ', ' + parseInt(parts[2]) + ' ' + bulan[parseInt(parts[1])-1] + ' ' + parts[0];
+                }
+                return str;
             } catch(e){ return str; }
         }
 
