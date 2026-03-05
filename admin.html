@@ -12,6 +12,7 @@
             min-height:100vh;font-family:'Plus Jakarta Sans',system-ui,sans-serif;
             display:flex;flex-direction:column;align-items:center;
             background:#0b0b1a;color:#e2e8f0;padding:24px;overflow-x:hidden;position:relative;
+            color-scheme:dark;
         }
         .blob{position:fixed;border-radius:50%;filter:blur(100px);opacity:.4;z-index:0;will-change:transform;pointer-events:none}
         .blob-1{width:480px;height:480px;background:#7c3aed;top:-15%;left:-10%;animation:drift 10s ease-in-out infinite alternate}
@@ -125,6 +126,7 @@
             background:#1a1a2e;border:1px solid rgba(255,255,255,.12);
             border-radius:20px;padding:28px 24px;width:100%;max-width:440px;
             animation:pop .3s cubic-bezier(.22,1,.36,1) both;
+            position:relative;z-index:101;
         }
         .modal h3{font-size:1.1rem;font-weight:800;color:#e2e8f0;margin-bottom:4px}
         .modal p{font-size:.82rem;color:rgba(255,255,255,.4);margin-bottom:18px}
@@ -133,7 +135,9 @@
             width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
             border-radius:10px;padding:10px 14px;font-family:inherit;font-size:.85rem;
             color:#e2e8f0;outline:none;margin-bottom:14px;transition:border-color .2s;
+            color-scheme:dark;
         }
+        .modal input[type="date"]{-webkit-appearance:auto;appearance:auto;min-height:44px;cursor:pointer}
         .modal input:focus,.modal select:focus,.modal textarea:focus{border-color:rgba(124,58,237,.5)}
         .modal select option{background:#1a1a2e;color:#e2e8f0}
         .modal-actions{display:flex;gap:10px;margin-top:6px}
@@ -521,12 +525,31 @@
 
         function openCheckinModal() {
             document.getElementById('ciModal').classList.add('show');
-            document.getElementById('ciTanggal').value = new Date().toISOString().slice(0,10);
+            var todayStr = new Date().getFullYear() + '-' +
+                String(new Date().getMonth()+1).padStart(2,'0') + '-' +
+                String(new Date().getDate()).padStart(2,'0');
+            document.getElementById('ciTanggal').value = todayStr;
+            updateTanggalPreview(todayStr);
             document.getElementById('ciDeskripsi').value = '';
             document.getElementById('ciStatus').value = 'aktif';
         }
         function closeCheckinModal() {
             document.getElementById('ciModal').classList.remove('show');
+        }
+        /* Listen date changes */
+        document.addEventListener('DOMContentLoaded', function(){
+            var dtInput = document.getElementById('ciTanggal');
+            if(dtInput) dtInput.addEventListener('change', function(){ updateTanggalPreview(this.value); });
+        });
+        function updateTanggalPreview(val){
+            var el = document.getElementById('ciTanggalPreview');
+            if(!el) return;
+            if(!val){ el.textContent=''; return; }
+            try{
+                var parts = val.split('-');
+                var d = new Date(parts[0], parts[1]-1, parts[2]);
+                el.textContent = '📅 ' + d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+            }catch(e){ el.textContent = val; }
         }
 
         function saveCheckinSetting() {
@@ -756,6 +779,7 @@
             <p>Atur tanggal check-in untuk siswa. Siswa hanya bisa check-in pada tanggal yang aktif.</p>
             <label>Tanggal</label>
             <input type="date" id="ciTanggal">
+            <div id="ciTanggalPreview" style="font-size:.82rem;color:#c4b5fd;margin:-10px 0 14px 2px"></div>
             <label>Deskripsi (opsional)</label>
             <input type="text" id="ciDeskripsi" placeholder="Misal: Pertemuan Sesi 1">
             <label>Status</label>
