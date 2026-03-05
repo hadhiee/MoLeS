@@ -158,6 +158,20 @@
         .ref-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
         .ref-success{text-align:center;padding:12px;font-size:.85rem;font-weight:600;color:#4ade80;background:rgba(34,197,94,.08);border-radius:12px;margin-top:10px;display:none}
 
+        /* Check-in Card */
+        #checkinArea{position:fixed;top:70px;right:20px;z-index:10;max-width:340px;width:calc(100vw - 40px);animation:slideInRight .5s cubic-bezier(.22,1,.36,1) both}
+        @keyframes slideInRight{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+        .checkin-card{background:rgba(34,197,94,.12);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1.5px solid rgba(34,197,94,.25);border-radius:18px;padding:18px 20px;margin-bottom:12px}
+        .checkin-header{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+        .ci-icon{font-size:1.8rem;line-height:1}
+        .checkin-header h3{font-size:1rem;font-weight:700;color:#4ade80;margin:0}
+        .ci-meta{font-size:.78rem;color:rgba(255,255,255,.5);margin-bottom:12px;line-height:1.5}
+        .checkin-btn{width:100%;padding:10px;border:none;border-radius:12px;background:linear-gradient(135deg,#22c55e,#06b6d4);color:#fff;font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s}
+        .checkin-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(34,197,94,.3)}
+        .checkin-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+        .checkin-done{text-align:center;font-size:.82rem;font-weight:600;color:#86efac;background:rgba(34,197,94,.15);padding:9px;border-radius:10px}
+        @media(max-width:768px){#checkinArea{top:auto;bottom:100px;right:12px;left:12px;max-width:none;width:auto}}
+
         @media(max-width:768px){
             .presentation-container{align-items:flex-start;padding:56px 12px calc(100px + env(safe-area-inset-bottom))}
             .slide{margin-top:6px;max-height:calc(100dvh - 170px - env(safe-area-inset-bottom));padding:28px 24px;border-radius:20px;justify-content:flex-start}
@@ -247,8 +261,7 @@
     <div class="blob blob-2"></div>
     <div class="blob blob-3"></div>
     <a href="index.html" class="back-link">&larr; Beranda</a>
-    <div class="watermark">Moklet Leadership &bull; SMK Telkom Malang</div>
-
+    <div class="watermark">Moklet Leadership &bull; SMK Telkom Malang</div>    <div id="checkinArea"></div>
     <div class="presentation-container">
 
         <section class="slide active">
@@ -482,15 +495,65 @@
         var _origShowSlide=showSlide;
         showSlide=function(idx){_origShowSlide(idx);if(slides[idx]&&slides[idx].classList.contains('quiz-slide'))initQuiz();};
 
-        /* ── Reflection submission ── */
+        var _ciLoading = false;
+        function loadActiveCheckin() {
+            if (_ciLoading) return;
+            if (typeof MOLESH_CONFIG === 'undefined' || MOLESH_CONFIG.APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL') return;
+            var raw = localStorage.getItem('molesh_user');
+            if (!raw) return;
+            try { var user = JSON.parse(raw); } catch(e){ return; }
+            if (!user.email || user.email === 'Mode pratinjau') return;
+            _ciLoading = true;
+            var doneIds = getCheckedInIds();
+            fetch(MOLESH_CONFIG.APPS_SCRIPT_URL + '?type=activeCheckin')
+                .then(function(r){ return r.json(); })
+                .then(function(data){
+                    _ciLoading = false;
+                    var area = document.getElementById('checkinArea');
+                    if (!area) return;
+                    if (!data.length) { area.innerHTML = ''; return; }
+                    var html = '';
+                    data.forEach(function(ci){
+                        var tanggal = ci.tanggal;
+                        try { var parts = tanggal.split('-'); tanggal = parts[2] + '-' + parts[1] + '-' + parts[0]; } catch(e){}
+                        var alreadyDone = doneIds.indexOf(ci.id) > -1;
+                        html += '<div class="checkin-card" id="ci_' + ci.id + '">';
+                        if (alreadyDone) {
+                            html += '<div class="checkin-header"><div class="ci-icon">✅</div><h3>Sudah Check-In</h3></div><div class="ci-meta">' + tanggal + (ci.deskripsi ? ' — ' + ci.deskripsi : '') + '</div><div class="checkin-done">✅ Kamu sudah check-in</div>';
+                        } else {
+                            html += '<div class="checkin-header"><div class="ci-icon">📍</div><h3>Check-In Tersedia!</h3></div><div class="ci-meta">' + tanggal + (ci.deskripsi ? ' — ' + ci.deskripsi : '') + '</div><button class="checkin-btn" onclick="doCheckin(\'' + ci.id + '\',\'' + (ci.tanggal||'') + '\',\'' + (ci.deskripsi||'').replace(/'/g,"\\'") + '\')">'+'📍 Check In Sekarang</button>';
+                        }
+                        html += '</div>';
+                    });
+                    area.innerHTML = html;
+                })
+                .catch(function(){ _ciLoading = false; });
+        }
+        function getCheckedInIds() { try { return JSON.parse(localStorage.getItem('molesh_checkins') || '[]'); } catch(e){ return []; } }
+        function markCheckedIn(ciId) { var ids = getCheckedInIds(); if (ids.indexOf(ciId) === -1) { ids.push(ciId); } localStorage.setItem('molesh_checkins', JSON.stringify(ids)); }
+        function doCheckin(ciId, tanggal, deskripsi) {
+            var raw = localStorage.getItem('molesh_user'); var profile = localStorage.getItem('molesh_profile');
+            if (!raw) { alert('Silakan login terlebih dahulu.'); return; }
+            try { var user = JSON.parse(raw); var prof = profile ? JSON.parse(profile) : {}; } catch(e){ alert('Data user tidak valid.'); return; }
+            if (!user.email || user.email === 'Mode pratinjau') { alert('Silakan login terlebih dahulu.'); return; }
+            var btn = document.querySelector('#ci_' + ciId + ' .checkin-btn');
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Mengirim...'; }
+            var payload = JSON.stringify({ action: 'doCheckin', checkinId: ciId, tanggal: tanggal, deskripsi: deskripsi, email: user.email, googleName: user.name || '', nama: prof.nama || '', kelas: prof.kelas || '', absen: prof.absen || '' });
+            fetch(MOLESH_CONFIG.APPS_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: payload })
+                .then(function() { markCheckedIn(ciId); var card = document.getElementById('ci_' + ciId); if (card) { card.innerHTML = '<div class="checkin-header"><div class="ci-icon">✅</div><h3>Sudah Check-In</h3></div><div class="ci-meta">' + (tanggal||'') + (deskripsi ? ' — ' + deskripsi : '') + '</div><div class="checkin-done">✅ Berhasil check-in!</div>'; } })
+                .catch(function() { if (btn) { btn.disabled = false; btn.textContent = '📍 Check In Sekarang'; } alert('Gagal check-in. Coba lagi.'); });
+        }
+        loadActiveCheckin();
+
         var SESI_NUM = 5;
         function submitRefleksi() {
             var text = document.getElementById('refleksiText').value.trim();
             if (!text) { alert('Tulis refleksimu dulu ya!'); return; }
-            var raw = localStorage.getItem('molesh_user');
-            var profile = localStorage.getItem('molesh_profile');
-            try { var user = JSON.parse(raw || '{}'); var prof = JSON.parse(profile || '{}'); } catch(e) { var user = {}; var prof = {}; }
-            if (!user.email || user.email === 'Mode pratinjau') { alert('Silakan login terlebih dahulu untuk mengirim refleksi.'); return; }
+            if (text.length < 20) { alert('Refleksi terlalu singkat. Minimal 20 karakter.'); return; }
+            var raw = localStorage.getItem('molesh_user'); var profile = localStorage.getItem('molesh_profile');
+            if (!raw) { alert('Silakan login terlebih dahulu untuk mengirim refleksi.'); return; }
+            try { var user = JSON.parse(raw); var prof = JSON.parse(profile || '{}'); } catch(e) { alert('Data user tidak valid. Silakan login ulang.'); return; }
+            if (!user.email || user.email === 'Mode pratinjau') { alert('Silakan login dengan akun Google untuk mengirim refleksi.'); return; }
             var btn = document.getElementById('refSubmitBtn');
             btn.disabled = true; btn.textContent = '\u23F3 Mengirim...';
             var apiUrl = '';
