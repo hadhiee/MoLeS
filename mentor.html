@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentor AI — Moklet Leadership</title>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+
+        body{
+            height:100vh;height:100dvh;
+            font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+            display:flex;flex-direction:column;align-items:center;
+            background:#0b0b1a;color:#e2e8f0;
+            overflow:hidden;position:relative;
+        }
+
+        .blob{position:fixed;border-radius:50%;filter:blur(100px);opacity:.35;z-index:0;pointer-events:none;will-change:transform}
+        .blob-1{width:460px;height:460px;background:#7c3aed;top:-15%;left:-10%;animation:drift 10s ease-in-out infinite alternate}
+        .blob-2{width:340px;height:340px;background:#06b6d4;bottom:-10%;right:-8%;animation:drift 12s ease-in-out infinite alternate-reverse}
+        .blob-3{width:240px;height:240px;background:#f43f5e;top:40%;left:55%;animation:drift 14s ease-in-out infinite alternate}
+        @keyframes drift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(30px,20px) scale(1.08)}}
+
+        /* ── Layout shell ── */
+        .chat-wrapper{
+            position:relative;z-index:1;
+            width:100%;max-width:540px;
+            height:100%;
+            display:flex;flex-direction:column;
+        }
+
+        /* ── Header ── */
+        .chat-header{
+            display:flex;align-items:center;gap:10px;
+            padding:12px 14px;
+            background:rgba(11,11,26,.8);
+            backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+            border-bottom:1px solid rgba(255,255,255,.08);
+            flex-shrink:0;
+        }
+        .back-btn{
+            display:inline-flex;align-items:center;gap:5px;
+            text-decoration:none;color:rgba(255,255,255,.5);
+            font-size:.76rem;font-weight:600;
+            padding:7px 10px;border-radius:9px;
+            background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);
+            transition:all .2s;flex-shrink:0;
+        }
+        .back-btn:hover{background:rgba(255,255,255,.1);color:#e2e8f0}
+        .back-btn svg{width:13px;height:13px;fill:currentColor}
+        .mentor-id{flex:1;min-width:0}
+        .mentor-id .m-name{font-size:.88rem;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .mentor-id .m-status{font-size:.68rem;color:#4ade80;display:flex;align-items:center;gap:4px;margin-top:1px}
+        .mentor-id .m-status::before{content:'';display:inline-block;width:6px;height:6px;background:#4ade80;border-radius:50%;animation:pulse 2s ease-in-out infinite}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+        .mentor-avatar{
+            width:40px;height:40px;border-radius:12px;
+            background:linear-gradient(135deg,#7c3aed,#06b6d4);
+            display:grid;place-items:center;font-size:1.25rem;flex-shrink:0;
+            box-shadow:0 4px 16px rgba(124,58,237,.4);
+        }
+        .restart-btn{
+            background:none;border:1px solid rgba(255,255,255,.1);border-radius:8px;
+            color:rgba(255,255,255,.35);font-size:.7rem;font-weight:600;
+            padding:6px 9px;cursor:pointer;font-family:inherit;
+            transition:all .2s;flex-shrink:0;line-height:1;
+        }
+        .restart-btn:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.7)}
+
+        /* ── Messages area ── */
+        .chat-messages{
+            flex:1;overflow-y:auto;
+            padding:14px 14px 8px;
+            display:flex;flex-direction:column;gap:8px;
+            scroll-behavior:smooth;
+        }
+        .chat-messages::-webkit-scrollbar{width:3px}
+        .chat-messages::-webkit-scrollbar-track{background:transparent}
+        .chat-messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:2px}
+
+        /* ── Message bubbles ── */
+        .msg{
+            display:flex;align-items:flex-end;gap:8px;
+            animation:msgIn .32s cubic-bezier(.22,1,.36,1) both;
+        }
+        @keyframes msgIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+        .msg.user{flex-direction:row-reverse}
+
+        .msg-avatar{
+            width:28px;height:28px;border-radius:8px;flex-shrink:0;
+            display:grid;place-items:center;font-size:.85rem;
+        }
+        .msg.bot .msg-avatar{background:linear-gradient(135deg,#7c3aed,#06b6d4)}
+        .msg.user .msg-avatar{
+            background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);
+            font-size:.65rem;font-weight:700;color:#c4b5fd;overflow:hidden;
+        }
+        .msg.user .msg-avatar img{width:100%;height:100%;object-fit:cover;border-radius:7px}
+
+        .bubble{
+            max-width:84%;padding:11px 14px;
+            border-radius:16px;line-height:1.58;font-size:.84rem;
+        }
+        .msg.bot .bubble{
+            background:rgba(255,255,255,.07);
+            border:1px solid rgba(255,255,255,.09);
+            border-bottom-left-radius:4px;
+            color:#e2e8f0;
+        }
+        .msg.user .bubble{
+            background:linear-gradient(135deg,rgba(124,58,237,.75),rgba(6,182,212,.55));
+            border:1px solid rgba(124,58,237,.35);
+            border-bottom-right-radius:4px;
+            color:#fff;
+        }
+
+        /* Typing indicator */
+        .typing{display:flex;align-items:center;gap:4px;padding:12px 14px;min-width:54px}
+        .typing span{
+            width:7px;height:7px;background:rgba(255,255,255,.4);
+            border-radius:50%;animation:td .65s ease-in-out infinite;
+        }
+        .typing span:nth-child(2){animation-delay:.14s}
+        .typing span:nth-child(3){animation-delay:.28s}
+        @keyframes td{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-7px);opacity:1}}
+
+        /* ── Chips ── */
+        .chips{display:flex;flex-wrap:wrap;gap:7px;padding-top:8px}
+        .chip{
+            background:rgba(124,58,237,.14);border:1px solid rgba(124,58,237,.28);
+            color:#c4b5fd;border-radius:24px;
+            padding:7px 13px;font-size:.78rem;font-weight:600;
+            cursor:pointer;font-family:inherit;
+            transition:all .18s;
+        }
+        .chip:hover:not(:disabled){background:rgba(124,58,237,.28);border-color:rgba(124,58,237,.5);color:#e2d6ff;transform:translateY(-1px)}
+        .chip:disabled{opacity:.45;cursor:default}
+        .chip.chip-end{
+            background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.25);color:#4ade80;
+        }
+        .chip.chip-end:hover:not(:disabled){background:rgba(34,197,94,.2);border-color:rgba(34,197,94,.45);color:#86efac}
+
+        /* ── Reading recommendation cards ── */
+        .rec-cards{display:flex;flex-direction:column;gap:9px;width:100%;margin-top:4px}
+        .rec-card{
+            background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);
+            border-radius:12px;padding:12px 13px;
+            display:flex;align-items:flex-start;gap:10px;
+            transition:background .18s;
+        }
+        .rec-card:hover{background:rgba(255,255,255,.09)}
+        .rec-icon{
+            width:36px;height:36px;border-radius:9px;flex-shrink:0;
+            background:linear-gradient(135deg,#7c3aed,#06b6d4);
+            display:grid;place-items:center;font-size:1.1rem;
+        }
+        .rc-info{}
+        .rc-title{font-size:.81rem;font-weight:700;color:#e2e8f0;line-height:1.3}
+        .rc-author{font-size:.7rem;color:#a78bfa;margin:2px 0 4px}
+        .rc-desc{font-size:.73rem;color:rgba(255,255,255,.48);line-height:1.45}
+
+        /* ── Topic badge in intro ── */
+        .topic-badge{
+            display:inline-block;
+            padding:3px 10px;border-radius:24px;
+            font-size:.72rem;font-weight:700;
+            margin-bottom:8px;
+        }
+
+        /* ── Input bar ── */
+        .chat-input{
+            padding:10px 14px;
+            background:rgba(11,11,26,.8);
+            backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+            border-top:1px solid rgba(255,255,255,.07);
+            display:flex;align-items:flex-end;gap:9px;
+            flex-shrink:0;
+        }
+        .input-wrap{
+            flex:1;position:relative;
+        }
+        .input-field{
+            width:100%;
+            background:rgba(255,255,255,.07);
+            border:1px solid rgba(255,255,255,.1);border-radius:13px;
+            color:#e2e8f0;font-family:inherit;font-size:.86rem;
+            padding:11px 13px;resize:none;
+            min-height:44px;max-height:110px;line-height:1.45;
+            outline:none;transition:border-color .2s;
+            overflow-y:auto;display:block;
+        }
+        .input-field:focus{border-color:rgba(124,58,237,.5)}
+        .input-field::placeholder{color:rgba(255,255,255,.28)}
+        .input-field:disabled{opacity:.5;cursor:not-allowed}
+        .send-btn{
+            width:44px;height:44px;border-radius:12px;
+            background:linear-gradient(135deg,#7c3aed,#06b6d4);
+            border:none;cursor:pointer;
+            display:grid;place-items:center;flex-shrink:0;
+            transition:all .18s;
+            box-shadow:0 3px 12px rgba(124,58,237,.35);
+        }
+        .send-btn:hover:not(:disabled){transform:scale(1.05);box-shadow:0 5px 20px rgba(124,58,237,.5)}
+        .send-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+        .send-btn svg{width:18px;height:18px;fill:#fff}
+
+        /* ── Hint text below input ── */
+        .input-hint{
+            font-size:.66rem;color:rgba(255,255,255,.2);
+            text-align:center;padding:4px 0 6px;flex-shrink:0;
+        }
+    </style>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="chat-wrapper">
+
+        <!-- Header -->
+        <div class="chat-header">
+            <a class="back-btn" href="index.html">
+                <svg viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd"/></svg>
+                Kembali
+            </a>
+            <div class="mentor-id">
+                <div class="m-name">Mentor AI MOLESH</div>
+                <div class="m-status">Siap membantumu refleksi</div>
+            </div>
+            <button class="restart-btn" onclick="startConversation()" title="Mulai ulang percakapan">↺ Reset</button>
+            <div class="mentor-avatar">🤖</div>
+        </div>
+
+        <!-- Messages -->
+        <div class="chat-messages" id="chatMessages"></div>
+
+        <!-- Input hint -->
+        <div class="input-hint" id="inputHint">Enter untuk kirim &nbsp;·&nbsp; Shift+Enter untuk baris baru</div>
+
+        <!-- Input bar -->
+        <div class="chat-input">
+            <div class="input-wrap">
+                <textarea class="input-field" id="inputField"
+                    placeholder="Ketik jawabanmu di sini..."
+                    rows="1" maxlength="600"></textarea>
+            </div>
+            <button class="send-btn" id="sendBtn" onclick="handleSend()" title="Kirim">
+                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+    // ═══════════════════════════════════════
+    //  CONVERSATION DATA
+    // ═══════════════════════════════════════
+    var TOPICS = {
+        kepemimpinan: {
+            label: 'Kepemimpinan',
+            emoji: '👑',
+            badgeColor: '#f59e0b',
+            badgeBg: 'rgba(245,158,11,.15)',
+            intro: 'Kepemimpinan sejati bukan soal posisi atau jabatan — ia tumbuh dari pengaruh yang tulus. Yuk kita gali perspektifmu lebih dalam.',
+            questions: [
+                'Bayangkan kamu memimpin tim di mana setiap anggota punya pendapat berbeda-beda. <strong>Apa langkah pertama yang konkret akan kamu ambil?</strong>',
+                'Pikirkan satu orang — bisa orang terdekat atau tokoh publik — yang kamu anggap pemimpin luar biasa. <strong>Kualitas apa dari mereka yang paling ingin kamu kembangkan dalam dirimu, dan mengapa?</strong>',
+                'Menurutmu, <strong>apa perbedaan terbesar antara "memimpin orang" dan "melayani orang"?</strong> Apakah keduanya bisa berjalan bersamaan?'
+            ],
+            recommendations: [
+                { icon: '📘', title: 'Starts With Why', author: 'Simon Sinek', desc: 'Pemimpin terbaik menggerakkan orang dengan alasan yang bermakna, bukan sekadar perintah. Buku ini membantumu menemukan "mengapa"-mu sendiri.' },
+                { icon: '🍽️', title: 'Leaders Eat Last', author: 'Simon Sinek', desc: 'Pemimpin hebat melindungi timnya dan menempatkan kepentingan orang lain di atas kepentingan pribadi — bahkan dalam situasi sulit.' },
+                { icon: '⚡', title: 'The 7 Habits of Highly Effective People', author: 'Stephen Covey', desc: '7 kebiasaan transformatif — dari proaktif, mulai dengan tujuan akhir, hingga sinergi tim — yang membentuk karakter pemimpin efektif.' }
+            ]
+        },
+        branding: {
+            label: 'Personal Branding',
+            emoji: '✨',
+            badgeColor: '#a78bfa',
+            badgeBg: 'rgba(167,139,250,.15)',
+            intro: 'Personal branding bukan tentang pencitraan — ini tentang menunjukkan dirimu yang sesungguhnya dengan cara yang tepat. Mari kita temukan apa yang benar-benar membuatmu unik.',
+            questions: [
+                'Jika ada <strong>3 kata yang paling menggambarkan dirimu</strong> — bukan yang ingin kamu tampilkan, tapi yang benar-benar mencerminkan siapa kamu — apa saja kata-kata itu?',
+                '<strong>Kelebihan atau keahlian apa yang kamu punya yang jarang dimiliki orang lain</strong> di sekitarmu? Bisa soal cara berpikir, skill teknis, atau cara bergaul.',
+                'Di bidang atau peran apa kamu ingin menjadi "orang yang diingat orang lain" <strong>3–5 tahun dari sekarang?</strong> Apa yang sudah kamu lakukan untuk menuju ke sana?'
+            ],
+            recommendations: [
+                { icon: '🎨', title: 'Show Your Work!', author: 'Austin Kleon', desc: 'Cara berbagi prosesmu — bukan hanya hasilnya — untuk menarik orang-orang yang tepat ke dalam hidupmu secara organik dan otentik.' },
+                { icon: '🔍', title: 'StrengthsFinder 2.0', author: 'Tom Rath', desc: 'Temukan 5 talenta alami terbesarmu berdasarkan riset Gallup dan pelajari cara memaksimalkan kekuatan yang sudah ada dalam dirimu.' },
+                { icon: '🚀', title: 'Crush It!', author: 'Gary Vaynerchuk', desc: 'Panduan praktis membangun personal brand yang otentik di era media sosial — dengan konsistensi, keberanian, dan nilai yang tulus.' }
+            ]
+        },
+        teamwork: {
+            label: 'Teamwork & Kolaborasi',
+            emoji: '🤝',
+            badgeColor: '#34d399',
+            badgeBg: 'rgba(52,211,153,.15)',
+            intro: 'Tim yang hebat tidak terbentuk karena kebetulan. Ada pola, kebiasaan, dan kepercayaan yang membuatnya luar biasa. Yuk kita eksplorasi pengalamanmu.',
+            questions: [
+                'Ceritakan <strong>pengalaman kerja tim yang paling berkesan</strong> — bisa yang berhasil luar biasa atau justru gagal total. Apa faktor terbesar yang membuat perbedaan itu?',
+                'Ketika ada <strong>konflik atau ketegangan dalam tim</strong>, apa yang biasanya kamu lakukan? Dan kalau dipikir-pikir, apa yang ingin kamu lakukan secara berbeda?',
+                'Bagaimana caramu memastikan setiap anggota tim merasa <strong>kontribusinya benar-benar dihargai</strong> — bukan sekadar basa-basi, tapi secara nyata?'
+            ],
+            recommendations: [
+                { icon: '🏔️', title: 'The Five Dysfunctions of a Team', author: 'Patrick Lencioni', desc: '5 pola disfungsi yang paling sering menghancurkan tim — mulai dari kurangnya kepercayaan hingga absennya akuntabilitas. Disajikan dalam format fabel bisnis yang mudah dicerna.' },
+                { icon: '💬', title: 'Radical Candor', author: 'Kim Scott', desc: 'Cara memberi feedback yang jujur dan langsung tanpa menyakiti perasaan — seni kepedulian sekaligus tantangan yang mengubah dinamika tim.' },
+                { icon: '🌐', title: 'Team of Teams', author: 'Gen. Stanley McChrystal', desc: 'Bagaimana tim militer elite mengubah struktur hirarkis menjadi jaringan tim adaptif yang bisa bergerak cepat, berbagi informasi, dan berinovasi bersama.' }
+            ]
+        },
+        digital: {
+            label: 'Etika Digital',
+            emoji: '🛡️',
+            badgeColor: '#22d3ee',
+            badgeBg: 'rgba(34,211,238,.15)',
+            intro: 'Di era digital, setiap klik, postingan, dan komentar punya konsekuensi nyata. Mari kita pikirkan bersama bagaimana kamu ingin hadir dan bertindak secara digital.',
+            questions: [
+                'Pernahkah kamu melihat atau menerima <strong>informasi yang kamu ragukan kebenarannya</strong> di media sosial? Apa yang kamu lakukan saat itu — dan apa yang sebaiknya dilakukan?',
+                'Menurutmu, <strong>di mana batas antara "berbagi cerita" dan "melanggar privasi"</strong> — baik privasi dirimu sendiri maupun orang lain?',
+                'Kalau kamu bisa <strong>merancang ulang hubunganmu dengan smartphone dan media sosial</strong>, satu hal apa yang paling ingin kamu ubah, dan kenapa?'
+            ],
+            recommendations: [
+                { icon: '📱', title: 'Digital Minimalism', author: 'Cal Newport', desc: 'Kuasai teknologimu, jangan dikendalikannya. Cara memilih hanya interaksi digital yang benar-benar memberi nilai dan makna bagi hidupmu.' },
+                { icon: '🧠', title: 'The Shallows', author: 'Nicholas Carr', desc: 'Riset mendalam tentang bagaimana internet mengubah cara otak kita bekerja — dan apa yang bisa kita lakukan untuk mempertahankan kemampuan berpikir mendalam.' },
+                { icon: '🗣️', title: 'Ten Arguments for Deleting Your Social Media', author: 'Jaron Lanier', desc: 'Pemikiran kritis dari pionir teknologi tentang dampak tersembunyi algoritma media sosial pada perilaku, identitas, dan masyarakat kita.' }
+            ]
+        },
+        growth: {
+            label: 'Growth Mindset',
+            emoji: '🌱',
+            badgeColor: '#f87171',
+            badgeBg: 'rgba(248,113,113,.15)',
+            intro: 'Growth mindset bukan sekadar slogan motivasi — ini cara pandang yang secara fundamental mengubah bagaimana kamu merespons tantangan, kegagalan, dan kritik.',
+            questions: [
+                'Ceritakan tentang <strong>kegagalan atau kesulitan terbesar</strong> yang pernah kamu alami. Pelajaran paling berharga apa yang justru muncul dari sana?',
+                'Hal apa yang <strong>dulu kamu anggap mustahil</strong> untuk kamu lakukan — karena tidak berbakat, tidak pintar, atau "memang bukan tipe kamu" — tapi sekarang sudah bisa atau mulai bisa?',
+                '<strong>Kebiasaan kecil apa yang paling ingin kamu bangun</strong> dalam 30 hari ke depan? Dan jujur, apa yang selama ini paling menghambatmu untuk memulainya?'
+            ],
+            recommendations: [
+                { icon: '🧬', title: 'Mindset', author: 'Carol S. Dweck', desc: 'Riset ilmiah yang membuktikan: apa yang kamu percaya tentang kemampuanmu sendiri menentukan seberapa jauh kamu bisa berkembang. Buku yang mengubah cara banyak orang memandang diri sendiri.' },
+                { icon: '⚙️', title: 'Atomic Habits', author: 'James Clear', desc: 'Perbaikan 1% setiap hari selama setahun = 37× lebih baik. Sistem membangun kebiasaan kecil yang menghasilkan perubahan luar biasa dalam jangka panjang.' },
+                { icon: '💎', title: 'Grit', author: 'Angela Duckworth', desc: 'Mengapa kombinasi passion dan ketekunan — bukan bakat atau kecerdasan bawaan — yang paling menentukan kesuksesan jangka panjang. Ditopang data riset 10 tahun.' }
+            ]
+        }
+    };
+
+    // ── Bot response variations ──
+    var ACK_GENERAL = [
+        'Perspektif yang menarik! Aku menangkap sesuatu yang penting dari jawabanmu.',
+        'Terima kasih sudah mau berbagi dengan jujur. Itu tidak selalu mudah.',
+        'Kamu punya cara pandang yang unik di sini — itu nilai lebih yang layak dipertahankan.',
+        'Refleksi yang cukup dalam. Tidak semua orang mau berhenti dan memikirkan ini.',
+        'Aku suka kejujuranmu. Justru kesadaran seperti ini yang menjadi fondasi pertumbuhan.'
+    ];
+    var ACK_SHORT = 'Menarik! Bisa diceritakan sedikit lebih konkret atau spesifik? Semakin detail, semakin bermanfaat refleksinya untukmu.';
+    var ACK_STRUGGLE = 'Jujur mengakui kesulitan itu butuh keberanian tersendiri. Dan justru menyadarinya adalah langkah pertama yang paling penting.';
+    var ACK_POSITIVE = 'Energi dan semangat itu terasa! Terusin momentum itu — konsistensi akan mengubahnya jadi identitas.';
+
+    // ── State ──
+    var state = {
+        phase: 'init',
+        topic: null,
+        qIndex: 0,
+        userName: '',
+        userPic: '',
+        busy: false
+    };
+
+    // ── DOM refs ──
+    var chatEl  = document.getElementById('chatMessages');
+    var inputEl = document.getElementById('inputField');
+    var sendBtn = document.getElementById('sendBtn');
+
+    // ═══════════════════════════════════════
+    //  HELPERS
+    // ═══════════════════════════════════════
+    function randItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+    function setInputEnabled(val) {
+        state.busy = !val;
+        inputEl.disabled = !val;
+        sendBtn.disabled = !val;
+    }
+
+    function scrollBottom() {
+        setTimeout(function() { chatEl.scrollTop = chatEl.scrollHeight; }, 40);
+    }
+
+    function escapeHtml(s) {
+        return s
+            .replace(/&/g,'&amp;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;')
+            .replace(/\n/g,'<br>');
+    }
+
+    function makeAvatarContent(role) {
+        if (role === 'bot') return '🤖';
+        if (state.userPic) return '<img src="' + state.userPic + '" alt="avatar">';
+        return (state.userName ? state.userName.charAt(0).toUpperCase() : 'K');
+    }
+
+    function appendMsg(role, html) {
+        var wrap = document.createElement('div');
+        wrap.className = 'msg ' + role;
+        wrap.innerHTML =
+            '<div class="msg-avatar">' + makeAvatarContent(role) + '</div>' +
+            '<div class="bubble">' + html + '</div>';
+        chatEl.appendChild(wrap);
+        scrollBottom();
+        return wrap;
+    }
+
+    function appendChips(chips) {
+        var wrap = document.createElement('div');
+        wrap.className = 'msg bot';
+        wrap.id = 'chipContainer';
+        var inner = '<div class="msg-avatar">' + makeAvatarContent('bot') + '</div><div class="bubble"><div class="chips">';
+        chips.forEach(function(c) {
+            var cls = 'chip' + (c.key === '__selesai' ? ' chip-end' : '');
+            inner += '<button class="' + cls + '" onclick="handleChip(\'' + c.key + '\')">' + c.emoji + ' ' + c.label + '</button>';
+        });
+        inner += '</div></div>';
+        wrap.innerHTML = inner;
+        chatEl.appendChild(wrap);
+        scrollBottom();
+    }
+
+    function freezeChips() {
+        var c = document.getElementById('chipContainer');
+        if (c) c.querySelectorAll('.chip').forEach(function(b){ b.disabled = true; });
+    }
+
+    function buildRecCards(recs) {
+        var html = '<div class="rec-cards">';
+        recs.forEach(function(r) {
+            html +=
+                '<div class="rec-card">' +
+                  '<div class="rec-icon">' + r.icon + '</div>' +
+                  '<div class="rc-info">' +
+                    '<div class="rc-title">' + r.title + '</div>' +
+                    '<div class="rc-author">' + r.author + '</div>' +
+                    '<div class="rc-desc">' + r.desc + '</div>' +
+                  '</div>' +
+                '</div>';
+        });
+        html += '</div>';
+        return html;
+    }
+
+    // ── botSay: shows typing indicator then appends message ──
+    function botSay(html, delay, keepBusy) {
+        delay = (delay === undefined) ? 800 : delay;
+        return new Promise(function(resolve) {
+            setInputEnabled(false);
+
+            // Typing indicator
+            var ti = document.createElement('div');
+            ti.className = 'msg bot';
+            ti.id = 'typingIndicator';
+            ti.innerHTML = '<div class="msg-avatar">🤖</div><div class="bubble typing"><span></span><span></span><span></span></div>';
+            chatEl.appendChild(ti);
+            scrollBottom();
+
+            setTimeout(function() {
+                var old = document.getElementById('typingIndicator');
+                if (old) old.remove();
+                appendMsg('bot', html);
+                if (!keepBusy) {
+                    setInputEnabled(true);
+                    inputEl.focus();
+                }
+                resolve();
+            }, delay);
+        });
+    }
+
+    // ═══════════════════════════════════════
+    //  CONVERSATION FLOW
+    // ═══════════════════════════════════════
+    function startConversation() {
+        chatEl.innerHTML = '';
+        state.phase = 'greeting';
+        state.topic = null;
+        state.qIndex = 0;
+
+        var user = null;
+        try { user = JSON.parse(localStorage.getItem('molesh_user')); } catch(e) {}
+        state.userName = (user && user.name) ? user.name.split(' ')[0] : 'Kamu';
+        state.userPic  = (user && user.picture) ? user.picture : '';
+
+        botSay(
+            'Halo, <strong>' + state.userName + '</strong>! 👋 Saya Mentor AI MOLESH, siap menemanimu berefleksi dan berkembang.',
+            700, true
+        )
+        .then(function() {
+            return botSay(
+                'Saya bisa mengajukan <strong>pertanyaan reflektif</strong> untuk menggali pikiranmu lebih dalam, sekaligus merekomendasikan <strong>bacaan pilihan</strong> yang relevan dengan minatmu.' +
+                '<br><br><strong>Topik apa yang ingin kita eksplorasi hari ini?</strong>',
+                1100
+            );
+        })
+        .then(function() {
+            state.phase = 'topic_select';
+            var chips = Object.keys(TOPICS).map(function(k) {
+                return { key: k, emoji: TOPICS[k].emoji, label: TOPICS[k].label };
+            });
+            appendChips(chips);
+        });
+    }
+
+    function handleChip(key) {
+        // "Done" shortcut
+        if (key === '__selesai') {
+            freezeChips();
+            appendMsg('user', '✅ Sudah cukup');
+            botSay(
+                'Terima kasih sudah meluangkan waktu untuk berefleksi' +
+                (state.userName !== 'Kamu' ? ', <strong>' + state.userName + '</strong>' : '') +
+                '! 🎉<br><br>' +
+                'Ingat: pertumbuhan terbaik terjadi saat kamu <em>jujur</em> dengan dirimu sendiri dan <em>konsisten</em> mengambil langkah kecil setiap hari. Semangat! 💪',
+                900
+            ).then(function() {
+                state.phase = 'done';
+                setInputEnabled(false);
+            });
+            return;
+        }
+
+        var topic = TOPICS[key];
+        if (!topic) return;
+
+        freezeChips();
+        state.topic  = key;
+        state.phase  = 'questioning';
+        state.qIndex = 0;
+
+        appendMsg('user', topic.emoji + ' ' + topic.label);
+
+        var badge = '<span class="topic-badge" style="color:' + topic.badgeColor + ';background:' + topic.badgeBg + '">' + topic.emoji + ' ' + topic.label + '</span>';
+
+        botSay(badge + topic.intro, 750, true)
+        .then(function() {
+            return botSay(
+                '<strong>Pertanyaan 1 / 3</strong><br>' + topic.questions[0],
+                950
+            );
+        })
+        .then(function() { state.qIndex = 0; });
+    }
+
+    function detectTone(text) {
+        var t = text.toLowerCase();
+        if (/tidak|belum|sulit|susah|gagal|bingung|takut|khawatir|kesulitan|tidak bisa|enggak/.test(t)) return 'struggle';
+        if (/senang|suka|enjoy|excited|semangat|seru|antusias|bangga|berhasil/.test(t)) return 'positive';
+        return 'general';
+    }
+
+    function handleAnswer(text) {
+        var topic = TOPICS[state.topic];
+        var tone  = detectTone(text);
+        var ack;
+
+        if (text.trim().length < 20) {
+            ack = ACK_SHORT;
+        } else if (tone === 'struggle') {
+            ack = ACK_STRUGGLE;
+        } else if (tone === 'positive') {
+            ack = ACK_POSITIVE;
+        } else {
+            ack = randItem(ACK_GENERAL);
+        }
+
+        state.qIndex++;
+
+        if (state.qIndex < topic.questions.length) {
+            var qNum = state.qIndex + 1;
+            botSay(ack, 650, true)
+            .then(function() {
+                return botSay(
+                    '<strong>Pertanyaan ' + qNum + ' / 3</strong><br>' + topic.questions[state.qIndex],
+                    950
+                );
+            });
+
+        } else {
+            // All questions done → show recommendations
+            state.phase = 'recommend';
+            var name = state.userName !== 'Kamu' ? ', <strong>' + state.userName + '</strong>' : '';
+
+            botSay(ack, 650, true)
+            .then(function() {
+                return botSay(
+                    'Refleksimu sangat berharga' + name + '! 🌟 Sekarang izinkan saya merekomendasikan beberapa bacaan yang relevan dengan topik <strong>' + topic.label + '</strong>:',
+                    1000, true
+                );
+            })
+            .then(function() {
+                return botSay(buildRecCards(topic.recommendations), 850, true);
+            })
+            .then(function() {
+                state.phase = 'outro';
+                return botSay('Ada topik lain yang ingin kita eksplorasi bersama?', 700);
+            })
+            .then(function() {
+                var others = Object.keys(TOPICS)
+                    .filter(function(k) { return k !== state.topic; })
+                    .map(function(k) { return { key: k, emoji: TOPICS[k].emoji, label: TOPICS[k].label }; });
+                others.push({ key: '__selesai', emoji: '✅', label: 'Sudah cukup' });
+                appendChips(others);
+            });
+        }
+    }
+
+    function handleSend() {
+        if (state.busy) return;
+        var text = inputEl.value.trim();
+        if (!text) return;
+
+        inputEl.value = '';
+        autoResize();
+
+        if (state.phase === 'questioning') {
+            appendMsg('user', escapeHtml(text));
+            handleAnswer(text);
+        } else if (state.phase === 'topic_select' || state.phase === 'outro') {
+            appendMsg('user', escapeHtml(text));
+            botSay('Silakan pilih topik dari pilihan di atas, ya. 😊', 600);
+        } else if (state.phase === 'done') {
+            appendMsg('user', escapeHtml(text));
+            botSay('Percakapan sudah selesai. Tekan tombol <strong>↺ Reset</strong> di atas untuk memulai sesi baru! 😊', 600);
+        } else {
+            appendMsg('user', escapeHtml(text));
+            botSay('Saya sedang mempersiapkan percakapan. Tunggu sebentar ya. 😊', 600);
+        }
+    }
+
+    // ── Auto resize textarea ──
+    function autoResize() {
+        inputEl.style.height = 'auto';
+        inputEl.style.height = Math.min(inputEl.scrollHeight, 110) + 'px';
+    }
+
+    // ── Event listeners ──
+    inputEl.addEventListener('input', autoResize);
+    inputEl.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    });
+
+    // ═══════════════════════════════════════
+    //  INIT
+    // ═══════════════════════════════════════
+    startConversation();
+    </script>
+</body>
+</html>
