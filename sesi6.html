@@ -13,7 +13,21 @@
             font-family:'Plus Jakarta Sans',system-ui,sans-serif;
             background:#0b0b1a;color:#e2e8f0;
             overflow:hidden;position:relative;
+            transition:background .25s ease,color .25s ease;
         }
+        .theme-toggle{
+            position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:1000;
+            border:1px solid rgba(255,255,255,.15);
+            background:rgba(15,23,42,.58);
+            color:#f8fafc;
+            border-radius:999px;
+            font-family:inherit;font-size:.74rem;font-weight:700;
+            padding:8px 12px;
+            cursor:pointer;
+            backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+            transition:all .2s ease;
+        }
+        .theme-toggle:hover{transform:translateX(-50%) translateY(-1px);background:rgba(30,41,59,.76)}
         .blob{position:fixed;border-radius:50%;filter:blur(100px);opacity:.35;z-index:0;will-change:transform;pointer-events:none}
         .blob-1{width:480px;height:480px;background:#7c3aed;top:-15%;left:-10%;animation:drift 10s ease-in-out infinite alternate}
         .blob-2{width:360px;height:360px;background:#06b6d4;bottom:-10%;right:-8%;animation:drift 12s ease-in-out infinite alternate-reverse}
@@ -325,9 +339,31 @@
         .quiz-retry:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(124,58,237,.45)}
         @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
         .quiz-fade{animation:fadeUp .35s ease both}
+        html.theme-light body{background:#f4f7fb;color:#111827}
+        html.theme-light .blob{opacity:.18}
+        html.theme-light .kawung-layer{opacity:.2}
+        html.theme-light .theme-toggle{background:rgba(255,255,255,.92);color:#0f172a;border-color:rgba(15,23,42,.12)}
+        html.theme-light .slide{background:rgba(255,255,255,.9);border-color:rgba(15,23,42,.12)}
+        html.theme-light h1{background:linear-gradient(90deg,#1f2937 30%,#0e7490)}
+        html.theme-light h2{color:#6d28d9}
+        html.theme-light h3{color:#0e7490}
+        html.theme-light p,html.theme-light li,html.theme-light em{color:rgba(31,41,55,.75)}
+        html.theme-light strong{color:#111827}
+        html.theme-light .flow-body strong{color:#111827}
+        html.theme-light .flow-body small{color:rgba(31,41,55,.65)}
+        html.theme-light .session-flow{background:linear-gradient(145deg,rgba(255,255,255,.95),rgba(241,245,249,.92));border-color:rgba(14,116,144,.22)}
+        html.theme-light .flow-step{background:rgba(14,116,144,.08);border-color:rgba(14,116,144,.2)}
+        html.theme-light .callout{background:rgba(124,58,237,.08);color:rgba(31,41,55,.78)}
+        html.theme-light .activity,html.theme-light .refleksi-box,html.theme-light .checkin-bar,html.theme-light .checkin-card{background:rgba(255,255,255,.88);border-color:rgba(15,23,42,.13)}
+        html.theme-light .slide-counter,html.theme-light .back-link{background:rgba(255,255,255,.88);border-color:rgba(15,23,42,.12)}
+        html.theme-light .watermark{color:rgba(31,41,55,.45)}
+        html.theme-light .refleksi-box .ref-instruksi,html.theme-light .cb-meta,html.theme-light .ci-meta{color:rgba(31,41,55,.6)}
+        html.theme-light .refleksi-box textarea{background:#fff;border-color:rgba(15,23,42,.16);color:#1f2937}
+        html.theme-light .refleksi-box textarea::placeholder{color:rgba(31,41,55,.35)}
     </style>
 </head>
 <body>
+    <button id="themeToggle" class="theme-toggle" type="button" aria-label="Aktifkan tema terang">☀️ Light</button>
     <div class="kawung-layer"></div>
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
@@ -514,7 +550,32 @@
         var totalSlidesEl=document.getElementById('totalSlides');
         var prevBtn=document.getElementById('prevBtn');
         var nextBtn=document.getElementById('nextBtn');
+        var themeToggle=document.getElementById('themeToggle');
+
+        function applyTheme(theme) {
+            var isLight = theme === 'light';
+            document.documentElement.classList.toggle('theme-light', isLight);
+            try { localStorage.setItem('molesh_theme', isLight ? 'light' : 'dark'); } catch (e) {}
+            if (themeToggle) {
+                themeToggle.textContent = isLight ? '🌙 Dark' : '☀️ Light';
+                themeToggle.setAttribute('aria-label', isLight ? 'Aktifkan tema gelap' : 'Aktifkan tema terang');
+            }
+        }
+
+        function initThemeToggle() {
+            var storedTheme = 'dark';
+            try { storedTheme = localStorage.getItem('molesh_theme') || 'dark'; } catch (e) {}
+            applyTheme(storedTheme === 'light' ? 'light' : 'dark');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    var nextTheme = document.documentElement.classList.contains('theme-light') ? 'dark' : 'light';
+                    applyTheme(nextTheme);
+                });
+            }
+        }
+
         totalSlidesEl.textContent=totalSlides;
+        initThemeToggle();
         function showSlide(index){
             for(var i=0;i<slides.length;i++){
                 if(i===index){slides[i].classList.add('active');slides[i].scrollTop=0}

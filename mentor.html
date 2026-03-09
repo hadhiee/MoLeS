@@ -15,7 +15,21 @@
             display:flex;flex-direction:column;align-items:center;
             background:#0b0b1a;color:#e2e8f0;
             overflow:hidden;position:relative;
+            transition:background .25s ease,color .25s ease;
         }
+        .theme-toggle{
+            position:fixed;top:12px;right:12px;z-index:4;
+            border:1px solid rgba(255,255,255,.15);
+            background:rgba(15,23,42,.58);
+            color:#f8fafc;
+            border-radius:999px;
+            font-family:inherit;font-size:.74rem;font-weight:700;
+            padding:8px 12px;
+            cursor:pointer;
+            backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+            transition:all .2s ease;
+        }
+        .theme-toggle:hover{transform:translateY(-1px);background:rgba(30,41,59,.76)}
 
         .blob{position:fixed;border-radius:50%;filter:blur(100px);opacity:.35;z-index:0;pointer-events:none;will-change:transform}
         .blob-1{width:460px;height:460px;background:#7c3aed;top:-15%;left:-10%;animation:drift 10s ease-in-out infinite alternate}
@@ -211,9 +225,24 @@
             font-size:.66rem;color:rgba(255,255,255,.2);
             text-align:center;padding:4px 0 6px;flex-shrink:0;
         }
+
+        html.theme-light body{background:#f4f7fb;color:#111827}
+        html.theme-light .blob{opacity:.18}
+        html.theme-light .theme-toggle{background:rgba(255,255,255,.92);color:#0f172a;border-color:rgba(15,23,42,.12)}
+        html.theme-light .chat-header,html.theme-light .chat-input{background:rgba(255,255,255,.82);border-color:rgba(15,23,42,.1)}
+        html.theme-light .back-btn,html.theme-light .restart-btn{background:rgba(255,255,255,.9);border-color:rgba(15,23,42,.12);color:rgba(31,41,55,.7)}
+        html.theme-light .back-btn:hover,html.theme-light .restart-btn:hover{background:rgba(14,116,144,.08);color:#0e7490}
+        html.theme-light .mentor-id .m-name{color:#1f2937}
+        html.theme-light .msg.bot .bubble,html.theme-light .rec-card,html.theme-light .input-field{background:rgba(255,255,255,.9);border-color:rgba(15,23,42,.12);color:#1f2937}
+        html.theme-light .chip{background:rgba(124,58,237,.1);color:#6d28d9}
+        html.theme-light .rc-title{color:#1f2937}
+        html.theme-light .rc-author{color:#7c3aed}
+        html.theme-light .rc-desc,html.theme-light .input-hint{color:rgba(31,41,55,.58)}
+        html.theme-light .input-field::placeholder{color:rgba(31,41,55,.35)}
     </style>
 </head>
 <body>
+    <button id="themeToggle" class="theme-toggle" type="button" aria-label="Aktifkan tema terang">☀️ Light</button>
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
     <div class="blob blob-3"></div>
@@ -258,6 +287,30 @@
     // ═══════════════════════════════════════
     //  CONVERSATION DATA
     // ═══════════════════════════════════════
+    var themeToggle = document.getElementById('themeToggle');
+
+    function applyTheme(theme) {
+        var isLight = theme === 'light';
+        document.documentElement.classList.toggle('theme-light', isLight);
+        try { localStorage.setItem('molesh_theme', isLight ? 'light' : 'dark'); } catch (e) {}
+        if (themeToggle) {
+            themeToggle.textContent = isLight ? '🌙 Dark' : '☀️ Light';
+            themeToggle.setAttribute('aria-label', isLight ? 'Aktifkan tema gelap' : 'Aktifkan tema terang');
+        }
+    }
+
+    function initThemeToggle() {
+        var storedTheme = 'dark';
+        try { storedTheme = localStorage.getItem('molesh_theme') || 'dark'; } catch (e) {}
+        applyTheme(storedTheme === 'light' ? 'light' : 'dark');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', function() {
+                var nextTheme = document.documentElement.classList.contains('theme-light') ? 'dark' : 'light';
+                applyTheme(nextTheme);
+            });
+        }
+    }
+
     var TOPICS = {
         kepemimpinan: {
             label: 'Kepemimpinan',
@@ -655,6 +708,7 @@
     // ═══════════════════════════════════════
     //  INIT
     // ═══════════════════════════════════════
+    initThemeToggle();
     startConversation();
     </script>
 </body>

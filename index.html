@@ -32,7 +32,22 @@
             padding:24px;
             overflow-x:hidden;
             position:relative;
+            transition:background .25s ease,color .25s ease;
         }
+        .theme-toggle{
+            position:fixed;top:16px;right:16px;z-index:3;
+            border:1px solid rgba(255,255,255,.15);
+            background:rgba(15,23,42,.55);
+            color:#f8fafc;
+            border-radius:999px;
+            font-family:inherit;font-size:.78rem;font-weight:700;
+            padding:9px 14px;
+            cursor:pointer;
+            backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+            transition:all .2s ease;
+        }
+        .theme-toggle:hover{transform:translateY(-1px);background:rgba(30,41,59,.75)}
+        .theme-toggle:active{transform:translateY(0)}
         .kawung-layer{
             position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.32;
             background-image:
@@ -346,10 +361,32 @@
             .heritage-card{padding:15px 14px}
             .heritage-note{font-size:.81rem}
             .kawung-orb{opacity:.42}
+            .theme-toggle{top:12px;right:12px;padding:8px 12px;font-size:.74rem}
         }
+
+        html.theme-light body{background:#f4f7fb;color:#111827}
+        html.theme-light .kawung-layer{opacity:.22;background-image:radial-gradient(circle at 50% 50%,rgba(245,158,11,.12) 0 18%,transparent 18.5%),radial-gradient(circle at 50% 50%,rgba(14,116,144,.1) 0 18%,transparent 18.5%),linear-gradient(140deg,rgba(248,250,252,.95),rgba(241,245,249,.9))}
+        html.theme-light .blob{opacity:.18}
+        html.theme-light .theme-toggle{background:rgba(255,255,255,.9);color:#0f172a;border-color:rgba(15,23,42,.15)}
+        html.theme-light .hero h1{background:linear-gradient(90deg,#1f2937 20%,#0e7490)}
+        html.theme-light .hero-tag{background:rgba(14,116,144,.12);color:#0e7490}
+        html.theme-light .hero-tagline{color:rgba(17,24,39,.75)}
+        html.theme-light .hero-desc{color:rgba(31,41,55,.72)}
+        html.theme-light .pill,html.theme-light .feat,html.theme-light .auth-card,html.theme-light .user-bar,html.theme-light .dash-card,html.theme-light .session-link{background:rgba(255,255,255,.8);border-color:rgba(15,23,42,.1)}
+        html.theme-light .feat-title,html.theme-light .session-link .s-title,html.theme-light .roadmap-copy strong,html.theme-light .user-name{color:#1f2937}
+        html.theme-light .feat-desc,html.theme-light .session-link .s-desc,html.theme-light .user-email,html.theme-light .dash-subtitle,html.theme-light .auth-card p,html.theme-light .mentor-feature .mf-desc,html.theme-light .footer{color:rgba(31,41,55,.6)}
+        html.theme-light .heritage-card{background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(241,245,249,.9));border-color:rgba(245,158,11,.3)}
+        html.theme-light .heritage-note,html.theme-light .roadmap-copy small{color:rgba(31,41,55,.72)}
+        html.theme-light .roadmap-item{background:rgba(14,116,144,.08);border-color:rgba(14,116,144,.2)}
+        html.theme-light .g-btn-alt,html.theme-light .sign-out-btn{border-color:rgba(15,23,42,.15);color:rgba(31,41,55,.7)}
+        html.theme-light .g-btn-alt:hover{background:rgba(14,116,144,.08);color:#0e7490}
+        html.theme-light .sign-out-btn:hover{background:rgba(244,63,94,.12);color:#be123c}
+        html.theme-light .mentor-feature{background:linear-gradient(135deg,rgba(6,182,212,.08),rgba(124,58,237,.07));border-color:rgba(6,182,212,.24)}
+        html.theme-light .cb-meta{color:rgba(31,41,55,.6)}
     </style>
 </head>
 <body>
+    <button id="themeToggle" class="theme-toggle" type="button" aria-label="Aktifkan tema terang">☀️ Light</button>
     <div class="kawung-layer"></div>
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
@@ -533,6 +570,36 @@
         var userAvatar  = document.getElementById('userAvatar');
         var userName    = document.getElementById('userName');
         var userEmail   = document.getElementById('userEmail');
+        var themeToggle = document.getElementById('themeToggle');
+
+        function applyTheme(theme) {
+            var isLight = theme === 'light';
+            document.documentElement.classList.toggle('theme-light', isLight);
+            try { localStorage.setItem('molesh_theme', isLight ? 'light' : 'dark'); } catch (e) {}
+
+            if (themeToggle) {
+                themeToggle.textContent = isLight ? '\u{1F319} Dark' : '\u2600\uFE0F Light';
+                themeToggle.setAttribute('aria-label', isLight ? 'Aktifkan tema gelap' : 'Aktifkan tema terang');
+            }
+
+            var metaTheme = document.querySelector('meta[name="theme-color"]');
+            if (metaTheme) {
+                metaTheme.setAttribute('content', isLight ? '#f4f7fb' : '#0b0b1a');
+            }
+        }
+
+        function initThemeToggle() {
+            var storedTheme = 'dark';
+            try { storedTheme = localStorage.getItem('molesh_theme') || 'dark'; } catch (e) {}
+            applyTheme(storedTheme === 'light' ? 'light' : 'dark');
+
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    var nextTheme = document.documentElement.classList.contains('theme-light') ? 'dark' : 'light';
+                    applyTheme(nextTheme);
+                });
+            }
+        }
 
         /* ── Check saved session ── */
         function checkSession() {
@@ -667,6 +734,8 @@
         }
 
         /* ── Init ── */
+        initThemeToggle();
+
         if (!checkSession()) {
             waitForGIS();
         }
