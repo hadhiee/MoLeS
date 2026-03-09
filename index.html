@@ -389,6 +389,18 @@
         .mentor-feature .mf-desc{font-size:.7rem;color:rgba(255,255,255,.4);margin-top:2px}
         .mentor-feature .mf-arrow{color:rgba(6,182,212,.55);font-size:1rem;flex-shrink:0}
 
+        /* Dual mentor layout */
+        .mentors-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;margin-bottom:20px}
+        .mentors-row .mentor-feature{margin-bottom:0;flex-direction:column;align-items:flex-start;gap:8px;padding:14px}
+        .mentors-row .mf-top{display:flex;align-items:center;gap:10px;width:100%}
+        .mentors-row .mf-arrow{display:none}
+        .mentor-feature.gpt-agent{background:linear-gradient(135deg,rgba(16,163,127,.1),rgba(6,182,212,.08));border-color:rgba(16,163,127,.22)}
+        .mentor-feature.gpt-agent:hover{background:linear-gradient(135deg,rgba(16,163,127,.18),rgba(6,182,212,.16));border-color:rgba(16,163,127,.4);transform:translateY(-2px)}
+        .mentor-feature.gpt-agent .mf-icon{background:linear-gradient(135deg,#10a37f,#06b6d4);box-shadow:0 3px 12px rgba(16,163,127,.3)}
+        .mentor-feature.gpt-agent .mf-title{color:#34d399}
+        .mf-ext{display:inline-flex;align-items:center;gap:3px;font-size:.58rem;font-weight:700;padding:2px 8px;border-radius:50px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.35);margin-top:4px;letter-spacing:.3px}
+        @media(max-width:480px){.mentors-row{grid-template-columns:1fr}}
+
         .cta{
             display:inline-flex;align-items:center;gap:10px;
             text-decoration:none;
@@ -441,6 +453,9 @@
         html.theme-light .g-btn-alt:hover{background:rgba(14,116,144,.08);color:#0e7490}
         html.theme-light .sign-out-btn:hover{background:rgba(244,63,94,.12);color:#be123c}
         html.theme-light .mentor-feature{background:linear-gradient(135deg,rgba(6,182,212,.08),rgba(124,58,237,.07));border-color:rgba(6,182,212,.24)}
+        html.theme-light .mentor-feature.gpt-agent{background:linear-gradient(135deg,rgba(16,163,127,.08),rgba(6,182,212,.06));border-color:rgba(16,163,127,.2)}
+        html.theme-light .mentor-feature.gpt-agent .mf-title{color:#047857}
+        html.theme-light .mf-ext{background:rgba(15,23,42,.05);color:rgba(31,41,55,.4)}
         html.theme-light .cb-meta{color:rgba(31,41,55,.6)}
         html.theme-light .accent-lead{color:#6d28d9}
         html.theme-light .accent-soft{color:#0e7490}
@@ -596,14 +611,27 @@
                 </div>
             </div>
 
-            <a class="mentor-feature" href="mentor.html">
-                <div class="mf-icon">🤖</div>
-                <div class="mf-info">
-                    <div class="mf-title">Mentor AI MOLESH</div>
-                    <div class="mf-desc">Pertanyaan reflektif &amp; rekomendasi bacaan sesuai minatmu</div>
-                </div>
-                <div class="mf-arrow">→</div>
-            </a>
+            <div class="mentors-row">
+                <a class="mentor-feature" href="mentor.html">
+                    <div class="mf-top">
+                        <div class="mf-icon">🤖</div>
+                        <div class="mf-info">
+                            <div class="mf-title">Mentor AI MOLESH</div>
+                            <div class="mf-desc">Refleksi &amp; rekomendasi bacaan</div>
+                        </div>
+                    </div>
+                </a>
+                <a class="mentor-feature gpt-agent" href="https://s.id/MoLeCul" target="_blank" rel="noopener">
+                    <div class="mf-top">
+                        <div class="mf-icon">🧠</div>
+                        <div class="mf-info">
+                            <div class="mf-title">MoLeCul ChatGPT</div>
+                            <div class="mf-desc">Agen AI untuk leadership &amp; softskill</div>
+                        </div>
+                    </div>
+                    <span class="mf-ext">↗ Buka ChatGPT</span>
+                </a>
+            </div>
 
             <a class="cta" id="ctaBtn" href="presentasi.html">
                 MULAI SESI 1
