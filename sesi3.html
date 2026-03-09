@@ -838,6 +838,24 @@
                 });
         })();
 
+        /* ── Save slide progress ── */
+        (function(){
+            var _ssOrig = showSlide;
+            showSlide = function(idx){
+                _ssOrig(idx);
+                try {
+                    var raw = localStorage.getItem('molesh_user');
+                    if(!raw) return;
+                    var u = JSON.parse(raw);
+                    if(!u.email) return;
+                    var key = 'molesh_slide_' + SESI_NUM + '_' + u.email;
+                    var prev = {}; try { prev = JSON.parse(localStorage.getItem(key)||'{}'); } catch(e){}
+                    var maxR = (prev.maxReached||0) > idx ? prev.maxReached : idx;
+                    localStorage.setItem(key, JSON.stringify({current:idx,total:totalSlides,maxReached:maxR}));
+                } catch(e){}
+            };
+        })();
+
     </script>
 </body>
 </html>
